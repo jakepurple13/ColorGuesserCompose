@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -22,16 +21,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
@@ -47,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
@@ -186,10 +185,25 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                         Text("Score: ${animateIntAsState(vm.currentScore).value}")
                     },
                     floatingActionButton = {
-                        FloatingActionButton(
-                            onClick = vm::reset,
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ) { Icon(Icons.Default.Refresh, null) }
+                        val buttonState = when (vm.state) {
+                            GameState.Play -> Triple(
+                                "Make a Guess",
+                                {
+                                    scope.launch { drawerState.open() }
+                                    vm.guess()
+                                },
+                                Icons.Default.PlayArrow
+                            )
+                            GameState.Restart -> Triple("Play Again", vm::reset, Icons.Default.Refresh)
+                        }
+                        ExtendedFloatingActionButton(
+                            text = { Text(buttonState.first) },
+                            icon = { Icon(buttonState.third, null) },
+                            onClick = buttonState.second,
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = if (MaterialTheme.colorScheme.primary.luminance() < .5f) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.primaryContainer
+                        )
                     }
                 )
             }
@@ -204,7 +218,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
 
                 Box(
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(250.dp)
                         .background(MaterialTheme.colorScheme.primary, CircleShape)
                         .border(2.dp, Color.Black, CircleShape)
                         .constrainAs(circle) {
@@ -224,23 +238,6 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                     }
                 ) {
 
-                    val buttonState = when (vm.state) {
-                        GameState.Play -> "Make a Guess" to {
-                            scope.launch { drawerState.open() }
-                            vm.guess()
-                        }
-                        GameState.Restart -> "Play Again" to vm::reset
-                    }
-                    OutlinedButton(
-                        onClick = buttonState.second,
-                        modifier = Modifier.fillMaxWidth(),
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.primary,
-                        ),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
-                    ) { Text(buttonState.first) }
-
                     val hexValues = "0123456789ABCDEFabcdef".toCharArray()
 
                     OutlinedTextField(
@@ -258,10 +255,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
 
                         NumberOutlinedTextField(
                             value = vm.rValue,
@@ -291,10 +285,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                         )
                     }
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
 
                         NumberOutlinedTextField(
                             value = vm.cValue,
@@ -333,9 +324,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                                 .weight(1f)
                                 .padding(horizontal = 1.dp),
                             imeAction = ImeAction.Done,
-                            keyboardActions = KeyboardActions(
-                                onDone = { keyboard?.hide() }
-                            )
+                            keyboardActions = KeyboardActions(onDone = { keyboard?.hide() })
                         )
                     }
                 }
