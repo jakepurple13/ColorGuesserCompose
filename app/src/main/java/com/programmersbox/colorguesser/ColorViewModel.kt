@@ -159,6 +159,11 @@ class ColorViewModel : ViewModel() {
         yValue = 0
         kValue = 0
         state = GameState.Play
+        newColor()
+    }
+
+    fun newColor() {
+        color = Random.nextColor(a = 255)
     }
 }
 

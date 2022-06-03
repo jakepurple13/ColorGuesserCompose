@@ -6,13 +6,21 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -31,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,7 +66,7 @@ class MainActivity : ComponentActivity() {
 
             val vm: ColorViewModel = viewModel()
             val animateColor by animateColorAsState(targetValue = vm.color)
-            
+
             ColorGuesserTheme(
                 customPrimaryColor = animateColor
             ) {
@@ -78,6 +87,11 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
     val animateColor by animateColorAsState(targetValue = vm.color)
 
     Scaffold(
+        topBar = {
+            SmallTopAppBar(
+                title = { Text("Color Guesser") }
+            )
+        },
         bottomBar = {
             BottomAppBar(
                 icons = {
@@ -85,7 +99,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                 },
                 floatingActionButton = {
                     FloatingActionButton(
-                        onClick = { vm.color = Random.nextColor(a = 255) },
+                        onClick = vm::reset,
                         containerColor = MaterialTheme.colorScheme.primary
                     ) { Icon(Icons.Default.Refresh, null) }
                 }
@@ -113,16 +127,22 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                     }
             )
 
-            AnimatedVisibility(visible = vm.state == GameState.Restart) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .constrainAs(colorInfo) {
-                            start.linkTo(parent.start)
-                            end.linkTo(parent.end)
-                            top.linkTo(circle.bottom)
-                            bottom.linkTo(guessArea.top)
-                        }
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateContentSize()
+                    .constrainAs(colorInfo) {
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        top.linkTo(circle.bottom)
+                        bottom.linkTo(guessArea.top)
+                    }
+            ) {
+                Spacer(Modifier.size(1.dp))
+                AnimatedVisibility(
+                    visible = vm.state == GameState.Restart,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
                 ) {
                     Column(
                         modifier = Modifier.padding(14.dp),
@@ -130,7 +150,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                     ) {
                         val rgb = animateColor.toArgb()
                         Text("RGB: Red = ${rgb.red}, Green = ${rgb.green}, Blue = ${rgb.blue}")
-                        Text("Hex: ${Integer.toHexString(rgb).drop(2)}")
+                        Text("Hex: #${Integer.toHexString(rgb).drop(2)}")
                         val cmyk = getCMYKFromRGB(rgb.red, rgb.green, rgb.blue)
                         Text("CMYK: C = ${(cmyk.c * 100).toInt()}, M = ${(cmyk.m * 100).toInt()}, Y = ${(cmyk.y * 100).toInt()}, K = ${(cmyk.k * 100).toInt()}")
                     }
@@ -146,15 +166,19 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                 }
             ) {
 
+                val buttonState = when (vm.state) {
+                    GameState.Play -> "Make a Guess" to vm::guess
+                    GameState.Restart -> "Play Again" to vm::reset
+                }
                 OutlinedButton(
-                    onClick = { vm.guess() },
+                    onClick = buttonState.second,
                     modifier = Modifier.fillMaxWidth(),
                     border = BorderStroke(
                         width = 1.dp,
                         color = MaterialTheme.colorScheme.primary,
                     ),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
-                ) { Text("Make a Guess") }
+                ) { Text(buttonState.first) }
 
                 OutlinedTextField(
                     value = vm.hexValue,
