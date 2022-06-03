@@ -40,8 +40,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -58,6 +59,7 @@ import androidx.core.graphics.green
 import androidx.core.graphics.red
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.programmersbox.colorguesser.ui.theme.ColorGuesserTheme
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
@@ -88,9 +90,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
     val animateColor by animateColorAsState(targetValue = vm.color)
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    LaunchedEffect(vm.state) {
-        if (vm.state == GameState.Restart) drawerState.open()
-    }
+    val scope = rememberCoroutineScope()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -114,8 +114,8 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                     item {
                         Column(modifier = Modifier.padding(start = 14.dp)) {
                             Text("Actual Values")
-                            Text("RGB: Red = ${rgb.red}, Green = ${rgb.green}, Blue = ${rgb.blue}")
                             Text("Hex: #${Integer.toHexString(rgb).drop(2)}")
+                            Text("RGB: Red = ${rgb.red}, Green = ${rgb.green}, Blue = ${rgb.blue}")
                             Text("CMYK: C = ${(cmyk.c * 100).toInt()}, M = ${(cmyk.m * 100).toInt()}, Y = ${(cmyk.y * 100).toInt()}, K = ${(cmyk.k * 100).toInt()}")
                         }
                     }
@@ -130,8 +130,8 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                             )
                             Column(modifier = Modifier.padding(start = 14.dp)) {
                                 Text("Actual Hex: #${Integer.toHexString(rgb).drop(2)}")
-                                Text("Hex: #${vm.hexValue}")
-                                Text("Hex Score: ${vm.hexScore(rgb)}")
+                                Text("Hex: #${remember(vm.scoreReset) { vm.hexValue }}")
+                                Text("Hex Score: ${remember(vm.scoreReset) { vm.hexScore(rgb) }}")
                             }
                         }
                     }
@@ -145,10 +145,10 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
 
                             Column(modifier = Modifier.padding(start = 14.dp)) {
                                 Text("Actual RGB: Red = ${rgb.red}, Green = ${rgb.green}, Blue = ${rgb.blue}")
-                                Text("R: ${vm.rValue}")
-                                Text("G: ${vm.gValue}")
-                                Text("B: ${vm.bValue}")
-                                Text("RGB Score: ${vm.rgbScore(rgb)}")
+                                Text("R: ${remember(vm.scoreReset) { vm.rValue }}")
+                                Text("G: ${remember(vm.scoreReset) { vm.gValue }}")
+                                Text("B: ${remember(vm.scoreReset) { vm.bValue }}")
+                                Text("RGB Score: ${remember(vm.scoreReset) { vm.rgbScore(rgb) }}")
                             }
                         }
                     }
@@ -162,11 +162,11 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
 
                             Column(modifier = Modifier.padding(start = 14.dp)) {
                                 Text("Actual CMYK: C = ${(cmyk.c * 100).toInt()}, M = ${(cmyk.m * 100).toInt()}, Y = ${(cmyk.y * 100).toInt()}, K = ${(cmyk.k * 100).toInt()}")
-                                Text("C: ${vm.cValue}")
-                                Text("M: ${vm.mValue}")
-                                Text("Y: ${vm.yValue}")
-                                Text("K: ${vm.kValue}")
-                                Text("CMYK Score: ${vm.cmykScore(rgb)}")
+                                Text("C: ${remember(vm.scoreReset) { vm.cValue }}")
+                                Text("M: ${remember(vm.scoreReset) { vm.mValue }}")
+                                Text("Y: ${remember(vm.scoreReset) { vm.yValue }}")
+                                Text("K: ${remember(vm.scoreReset) { vm.kValue }}")
+                                Text("CMYK Score: ${remember(vm.scoreReset) { vm.cmykScore(rgb) }}")
                             }
                         }
                     }
@@ -225,7 +225,10 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                 ) {
 
                     val buttonState = when (vm.state) {
-                        GameState.Play -> "Make a Guess" to vm::guess
+                        GameState.Play -> "Make a Guess" to {
+                            scope.launch { drawerState.open() }
+                            vm.guess()
+                        }
                         GameState.Restart -> "Play Again" to vm::reset
                     }
                     OutlinedButton(
@@ -251,17 +254,14 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                         leadingIcon = { Text("#") },
                         label = { Text("Hex Color") },
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Text(
-                            "RGB",
-                            modifier = Modifier.weight(1f)
-                        )
 
                         NumberOutlinedTextField(
                             value = vm.rValue,
@@ -295,10 +295,6 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Text(
-                            "CMYK",
-                            modifier = Modifier.weight(1f)
-                        )
 
                         NumberOutlinedTextField(
                             value = vm.cValue,

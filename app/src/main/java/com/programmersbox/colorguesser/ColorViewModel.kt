@@ -20,6 +20,7 @@ enum class GameState { Play, Restart }
 class ColorViewModel : ViewModel() {
 
     var state by mutableStateOf(GameState.Play)
+    var scoreReset by mutableStateOf(0)
 
     var color by mutableStateOf(Random.nextColor(a = 255))
     var currentScore by mutableStateOf(0)
@@ -79,6 +80,7 @@ class ColorViewModel : ViewModel() {
         currentScore += addedScore
 
         state = GameState.Restart
+        scoreReset++
     }
 
     fun rgbScore(color: Int): Int {
