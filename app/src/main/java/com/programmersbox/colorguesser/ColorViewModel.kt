@@ -25,14 +25,14 @@ class ColorViewModel : ViewModel() {
 
     var hexValue by mutableStateOf("")
 
-    var rValue by mutableStateOf(0)
-    var gValue by mutableStateOf(0)
-    var bValue by mutableStateOf(0)
+    var rValue by mutableStateOf("")
+    var gValue by mutableStateOf("")
+    var bValue by mutableStateOf("")
 
-    var cValue by mutableStateOf(0)
-    var mValue by mutableStateOf(0)
-    var yValue by mutableStateOf(0)
-    var kValue by mutableStateOf(0)
+    var cValue by mutableStateOf("")
+    var mValue by mutableStateOf("")
+    var yValue by mutableStateOf("")
+    var kValue by mutableStateOf("")
 
     fun guess() {
         var addedScore = 0
@@ -54,9 +54,9 @@ class ColorViewModel : ViewModel() {
     }
 
     private fun rgbScore(color: Int): Int {
-        val rGuessed: String = rValue.toString()
-        val gGuessed: String = gValue.toString()
-        val bGuessed: String = bValue.toString()
+        val rGuessed: String = rValue
+        val gGuessed: String = gValue
+        val bGuessed: String = bValue
         //if any of the fields are empty, no points...no matter what
         //if any of the fields are empty, no points...no matter what
         return if (rGuessed.isNotEmpty() && gGuessed.isNotEmpty() && bGuessed.isNotEmpty()) {
@@ -102,10 +102,10 @@ class ColorViewModel : ViewModel() {
     }
 
     private fun cmykScore(color: Int): Int {
-        val cGuessed: String = cValue.toString()
-        val mGuessed: String = mValue.toString()
-        val yGuessed: String = yValue.toString()
-        val kGuessed: String = kValue.toString()
+        val cGuessed: String = cValue
+        val mGuessed: String = mValue
+        val yGuessed: String = yValue
+        val kGuessed: String = kValue
         //this is all to get the CMYK values. Taken from online.
         //http://www.javascripter.net/faq/hex2cmyk.htm
         //this is all to get the CMYK values. Taken from online.
@@ -151,13 +151,13 @@ class ColorViewModel : ViewModel() {
 
     fun reset() {
         hexValue = ""
-        rValue = 0
-        gValue = 0
-        bValue = 0
-        cValue = 0
-        mValue = 0
-        yValue = 0
-        kValue = 0
+        rValue = ""
+        gValue = ""
+        bValue = ""
+        cValue = ""
+        mValue = ""
+        yValue = ""
+        kValue = ""
         state = GameState.Play
         newColor()
     }

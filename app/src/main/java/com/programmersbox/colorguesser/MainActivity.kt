@@ -9,11 +9,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.expandVertically
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -45,9 +42,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -80,7 +80,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
 
@@ -185,7 +185,8 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                     onValueChange = { vm.hexValue = it },
                     leadingIcon = { Text("#") },
                     label = { Text("Hex Color") },
-                    singleLine = true
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                 )
 
                 Row(
@@ -197,22 +198,22 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                     )
 
                     NumberOutlinedTextField(
-                        value = vm.rValue.toString(),
-                        onValueChange = { vm.rValue = it.toIntOrNull()?.coerceIn(0, 255) ?: 0 },
+                        value = vm.rValue,
+                        onValueChange = { vm.rValue = it.toIntOrNull()?.coerceIn(0, 255)?.toString() ?: "" },
                         label = "R",
                         modifier = Modifier.weight(1f)
                     )
 
                     NumberOutlinedTextField(
-                        value = vm.gValue.toString(),
-                        onValueChange = { vm.gValue = it.toIntOrNull()?.coerceIn(0, 255) ?: 0 },
+                        value = vm.gValue,
+                        onValueChange = { vm.gValue = it.toIntOrNull()?.coerceIn(0, 255)?.toString() ?: "" },
                         label = "G",
                         modifier = Modifier.weight(1f)
                     )
 
                     NumberOutlinedTextField(
-                        value = vm.bValue.toString(),
-                        onValueChange = { vm.bValue = it.toIntOrNull()?.coerceIn(0, 255) ?: 0 },
+                        value = vm.bValue,
+                        onValueChange = { vm.bValue = it.toIntOrNull()?.coerceIn(0, 255)?.toString() ?: "" },
                         label = "B",
                         modifier = Modifier.weight(1f)
                     )
@@ -227,31 +228,37 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                     )
 
                     NumberOutlinedTextField(
-                        value = vm.cValue.toString(),
-                        onValueChange = { vm.cValue = it.toIntOrNull()?.coerceIn(0, 100) ?: 0 },
+                        value = vm.cValue,
+                        onValueChange = { vm.cValue = it.toIntOrNull()?.coerceIn(0, 100)?.toString() ?: "" },
                         label = "C",
                         modifier = Modifier.weight(1f)
                     )
 
                     NumberOutlinedTextField(
-                        value = vm.mValue.toString(),
-                        onValueChange = { vm.mValue = it.toIntOrNull()?.coerceIn(0, 100) ?: 0 },
+                        value = vm.mValue,
+                        onValueChange = { vm.mValue = it.toIntOrNull()?.coerceIn(0, 100)?.toString() ?: "" },
                         label = "M",
                         modifier = Modifier.weight(1f)
                     )
 
                     NumberOutlinedTextField(
-                        value = vm.yValue.toString(),
-                        onValueChange = { vm.yValue = it.toIntOrNull()?.coerceIn(0, 100) ?: 0 },
+                        value = vm.yValue,
+                        onValueChange = { vm.yValue = it.toIntOrNull()?.coerceIn(0, 100)?.toString() ?: "" },
                         label = "Y",
                         modifier = Modifier.weight(1f)
                     )
 
+                    val keyboard = LocalSoftwareKeyboardController.current
+
                     NumberOutlinedTextField(
-                        value = vm.kValue.toString(),
-                        onValueChange = { vm.kValue = it.toIntOrNull()?.coerceIn(0, 100) ?: 0 },
+                        value = vm.kValue,
+                        onValueChange = { vm.kValue = it.toIntOrNull()?.coerceIn(0, 100)?.toString() ?: "" },
                         label = "K",
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        imeAction = ImeAction.Done,
+                        keyboardActions = KeyboardActions(
+                            onDone = { keyboard?.hide() }
+                        )
                     )
                 }
             }
@@ -264,14 +271,17 @@ fun NumberOutlinedTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    imeAction: ImeAction = ImeAction.Next,
+    keyboardActions: KeyboardActions = KeyboardActions()
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = imeAction),
+        keyboardActions = keyboardActions,
         modifier = modifier
     )
 }
