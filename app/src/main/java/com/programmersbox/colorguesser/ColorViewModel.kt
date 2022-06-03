@@ -195,6 +195,23 @@ class ColorViewModel : ViewModel() {
     fun newColor() {
         color = Random.nextColor(a = 255)
     }
+
+    fun randomColors() {
+        val randomColor = Random.nextColor(a = 255).toArgb()
+
+        hexValue = Integer.toHexString(randomColor)
+
+        rValue = randomColor.red.toString()
+        gValue = randomColor.green.toString()
+        bValue = randomColor.blue.toString()
+
+        val cmyk = getCMYKFromRGB(randomColor.red, randomColor.green, randomColor.blue)
+
+        cValue = (cmyk.c * 100).toInt().toString()
+        mValue = (cmyk.m * 100).toInt().toString()
+        yValue = (cmyk.y * 100).toInt().toString()
+        kValue = (cmyk.k * 100).toInt().toString()
+    }
 }
 
 /**

@@ -21,13 +21,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
@@ -123,6 +126,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
 
                     vm.hexColor?.let {
                         item {
+                            Divider()
                             SmallTopAppBar(
                                 title = {},
                                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = it)
@@ -137,6 +141,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
 
                     vm.rgbColor?.let {
                         item {
+                            Divider()
                             SmallTopAppBar(
                                 title = {},
                                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = it)
@@ -154,6 +159,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
 
                     vm.cmykColor?.let {
                         item {
+                            Divider()
                             SmallTopAppBar(
                                 title = {},
                                 colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = it)
@@ -183,6 +189,7 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                 BottomAppBar(
                     icons = {
                         Text("Score: ${animateIntAsState(vm.currentScore).value}")
+                        IconButton(onClick = vm::randomColors) { Icon(Icons.Default.Face, null) }
                     },
                     floatingActionButton = {
                         val buttonState = when (vm.state) {
