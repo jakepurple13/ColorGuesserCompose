@@ -19,6 +19,8 @@ enum class GameState { Play, Restart }
 
 class ColorViewModel : ViewModel() {
 
+    var colorsAroundBorder by mutableStateOf(false)
+
     var state by mutableStateOf(GameState.Play)
     var scoreReset by mutableStateOf(0)
 
@@ -199,7 +201,7 @@ class ColorViewModel : ViewModel() {
     fun randomColors() {
         val randomColor = Random.nextColor(a = 255).toArgb()
 
-        hexValue = Integer.toHexString(randomColor)
+        hexValue = Integer.toHexString(randomColor).drop(2)
 
         rValue = randomColor.red.toString()
         gValue = randomColor.green.toString()

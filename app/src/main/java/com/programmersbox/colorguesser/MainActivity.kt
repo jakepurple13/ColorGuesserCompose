@@ -37,7 +37,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -60,6 +63,8 @@ import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.github.ajalt.colormath.extensions.android.composecolor.toComposeColor
+import com.github.ajalt.colormath.model.CMYK
 import com.programmersbox.colorguesser.ui.theme.ColorGuesserTheme
 import kotlinx.coroutines.launch
 import kotlin.random.Random
@@ -245,6 +250,15 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                     }
                 ) {
 
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Have colors around border")
+                        Switch(checked = vm.colorsAroundBorder, onCheckedChange = { vm.colorsAroundBorder = it })
+                    }
+
                     val hexValues = "0123456789ABCDEFabcdef".toCharArray()
 
                     OutlinedTextField(
@@ -259,7 +273,10 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                         label = { Text("Hex Color") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = if (vm.colorsAroundBorder)
+                            outlinedTextFieldBorderColors(color = vm.hexColor)
+                        else TextFieldDefaults.outlinedTextFieldColors()
                     )
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -270,7 +287,10 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                             label = "R",
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 1.dp)
+                                .padding(horizontal = 1.dp),
+                            colors = if (vm.colorsAroundBorder)
+                                outlinedTextFieldBorderColors(color = vm.rValue.toIntOrNull()?.let { Color(it, 0, 0) })
+                            else TextFieldDefaults.outlinedTextFieldColors()
                         )
 
                         NumberOutlinedTextField(
@@ -279,7 +299,10 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                             label = "G",
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 1.dp)
+                                .padding(horizontal = 1.dp),
+                            colors = if (vm.colorsAroundBorder)
+                                outlinedTextFieldBorderColors(color = vm.gValue.toIntOrNull()?.let { Color(0, it, 0) })
+                            else TextFieldDefaults.outlinedTextFieldColors()
                         )
 
                         NumberOutlinedTextField(
@@ -288,11 +311,19 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                             label = "B",
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 1.dp)
+                                .padding(horizontal = 1.dp),
+                            colors = if (vm.colorsAroundBorder)
+                                outlinedTextFieldBorderColors(color = vm.bValue.toIntOrNull()?.let { Color(0, 0, it) })
+                            else TextFieldDefaults.outlinedTextFieldColors()
                         )
                     }
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
+
+                        val c = vm.cValue.toIntOrNull()?.let { CMYK(it, 0, 0, 0) }?.toComposeColor()
+                        val m = vm.mValue.toIntOrNull()?.let { CMYK(0, it, 0, 0) }?.toComposeColor()
+                        val y = vm.yValue.toIntOrNull()?.let { CMYK(0, 0, it, 0) }?.toComposeColor()
+                        val k = vm.kValue.toIntOrNull()?.let { CMYK(0, 0, 0, it) }?.toComposeColor()
 
                         NumberOutlinedTextField(
                             value = vm.cValue,
@@ -300,7 +331,9 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                             label = "C",
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 1.dp)
+                                .padding(horizontal = 1.dp),
+                            colors = if (vm.colorsAroundBorder) outlinedTextFieldBorderColors(color = c)
+                            else TextFieldDefaults.outlinedTextFieldColors()
                         )
 
                         NumberOutlinedTextField(
@@ -309,7 +342,9 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                             label = "M",
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 1.dp)
+                                .padding(horizontal = 1.dp),
+                            colors = if (vm.colorsAroundBorder) outlinedTextFieldBorderColors(color = m)
+                            else TextFieldDefaults.outlinedTextFieldColors()
                         )
 
                         NumberOutlinedTextField(
@@ -318,7 +353,9 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                             label = "Y",
                             modifier = Modifier
                                 .weight(1f)
-                                .padding(horizontal = 1.dp)
+                                .padding(horizontal = 1.dp),
+                            colors = if (vm.colorsAroundBorder) outlinedTextFieldBorderColors(color = y)
+                            else TextFieldDefaults.outlinedTextFieldColors()
                         )
 
                         val keyboard = LocalSoftwareKeyboardController.current
@@ -331,7 +368,9 @@ fun ColorGuesserView(vm: ColorViewModel = viewModel()) {
                                 .weight(1f)
                                 .padding(horizontal = 1.dp),
                             imeAction = ImeAction.Done,
-                            keyboardActions = KeyboardActions(onDone = { keyboard?.hide() })
+                            keyboardActions = KeyboardActions(onDone = { keyboard?.hide() }),
+                            colors = if (vm.colorsAroundBorder) outlinedTextFieldBorderColors(color = k)
+                            else TextFieldDefaults.outlinedTextFieldColors()
                         )
                     }
                 }
@@ -347,7 +386,8 @@ fun NumberOutlinedTextField(
     label: String,
     modifier: Modifier = Modifier,
     imeAction: ImeAction = ImeAction.Next,
-    keyboardActions: KeyboardActions = KeyboardActions()
+    keyboardActions: KeyboardActions = KeyboardActions(),
+    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors()
 ) {
     OutlinedTextField(
         value = value,
@@ -356,7 +396,8 @@ fun NumberOutlinedTextField(
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = imeAction),
         keyboardActions = keyboardActions,
-        modifier = modifier
+        modifier = modifier,
+        colors = colors
     )
 }
 
@@ -366,6 +407,12 @@ fun Random.nextColor(
     b: Int = nextInt(0, 255),
     a: Int = nextInt(0, 255)
 ) = Color(r, g, b, a)
+
+@Composable
+fun outlinedTextFieldBorderColors(color: Color?) = TextFieldDefaults.outlinedTextFieldColors(
+    focusedBorderColor = color ?: MaterialTheme.colorScheme.primary,
+    unfocusedBorderColor = color ?: MaterialTheme.colorScheme.outline
+)
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable

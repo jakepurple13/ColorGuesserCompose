@@ -70,4 +70,5 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
     implementation "com.github.ajalt.colormath:colormath:3.2.0"
+    implementation "com.github.ajalt.colormath.extensions:colormath-ext-jetpack-compose:3.2.0"
 }
