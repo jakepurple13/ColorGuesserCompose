@@ -3,6 +3,7 @@ package com.programmersbox.colorguesser
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
@@ -34,6 +35,33 @@ class ColorViewModel : ViewModel() {
     var yValue by mutableStateOf("")
     var kValue by mutableStateOf("")
 
+    val rgbColor
+        get() = if (rValue.isNotEmpty() && gValue.isNotEmpty() && bValue.isNotEmpty()) {
+            Color(rValue.toInt(), gValue.toInt(), bValue.toInt())
+        } else null
+
+    val hexColor
+        get() = try {
+            val c: Int = android.graphics.Color.parseColor("#$hexValue")
+            Color(c)
+        } catch (e: NumberFormatException) {
+            null
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+
+    val cmykColor
+        get() = if (cValue.isNotEmpty() && mValue.isNotEmpty() && yValue.isNotEmpty() && kValue.isNotEmpty()) {
+            Color(
+                com.github.ajalt.colormath.model.CMYK(
+                    cValue.toInt(),
+                    mValue.toInt(),
+                    yValue.toInt(),
+                    kValue.toInt()
+                ).toSRGB().toRGBInt().argb.toInt()
+            )
+        } else null
+
     fun guess() {
         var addedScore = 0
 
@@ -53,7 +81,7 @@ class ColorViewModel : ViewModel() {
         state = GameState.Restart
     }
 
-    private fun rgbScore(color: Int): Int {
+    fun rgbScore(color: Int): Int {
         val rGuessed: String = rValue
         val gGuessed: String = gValue
         val bGuessed: String = bValue
@@ -75,7 +103,7 @@ class ColorViewModel : ViewModel() {
         } else 0
     }
 
-    private fun hexScore(color: Int): Int {
+    fun hexScore(color: Int): Int {
         val hexGuess: String = hexValue
 
         return try {
@@ -101,7 +129,7 @@ class ColorViewModel : ViewModel() {
         }
     }
 
-    private fun cmykScore(color: Int): Int {
+    fun cmykScore(color: Int): Int {
         val cGuessed: String = cValue
         val mGuessed: String = mValue
         val yGuessed: String = yValue
